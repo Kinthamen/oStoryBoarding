@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Sketch</title>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .storyboard {
+            background: rgba(0,0,0,0.4);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            color: white;
+        }
+
+            .storyboard span {
+                display: block;
+                padding: 5px 0px 0px 5px;
+                width: 100%;
+            }
+
+        .scene {
+            background: rgba(0,0,0,0.4);
+            display: block;
+            margin: 5px;
+            float: left;
+            flex-wrap: wrap;
+            border-radius: 5px;
+        }
+
+        .shot {
+            background: rgba(0,0,0,0.4);
+            display: block;
+            margin: 3px;
+            float: left;
+            flex-wrap: wrap;
+            border-radius: 5px;
+        }
+
+        .panel {
+            background: rgba(0,0,0,0.4);
+            display: block;
+            margin: 3px;
+            height: 200px;
+            width: 300px;
+            float: left;
+            border-radius: 5px;
+        }
+
+        .blank_panel {
+            background: rgba(0,0,0,0.4);
+            display: block;
+            margin: 3px;
+            height: 200px;
+            width: 300px;
+            float: left;
+            border-radius: 5px;
+        }
+
+        .blank_shot {
+            background: rgba(0,0,0,0.4);
+            display: block;
+            margin: 3px;
+            height: 200px;
+            width: 300px;
+            float: left;
+            border-radius: 5px;
+        }
+
+        .blank_scene {
+            background: rgba(0,0,0,0.4);
+            display: block;
+            margin: 3px;
+            height: 200px;
+            width: 300px;
+            float: left;
+            border-radius: 5px;
+        }
+
+        li:first-of-type {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <ul class="storyboard" id="sb1">
+        <li class="storyboard_label">StoryBoard for $(gamename)</li>
+        <li class="scene" id="sb1_sc1" draggable="true">
+            <span class="scene_label">Scene $(scenename)</span>
+            <ul class="shot" id="sb1_sc1_sh1" draggable="true">
+                <li class="shot_label">Shot $(shotname)</li>
+                <li class="panel" id="sb1_sc1_sh1_pa1" draggable="true" style="background: red;"></li>
+            </ul>
+        </li>
+        <li class="scene" id="sb1_sc2" draggable="true">
+            <span class="scene_label">Scene $(scenename)</span>
+            <ul class="shot" id="sb1_sc2_sh1" draggable="true">
+                <li class="shot_label">Shot $(shotname)</li>
+                <li class="panel" id="sb1_sc2_sh1_pa1" draggable="true" style="background: blue;"></li>
+                <li class="panel" id="sb1_sc2_sh1_pa2" draggable="true" style="background: green;"></li>
+            </ul>
+        </li>
+        <li class="scene" id="sb1_sc3" draggable="true">
+            <span class="scene_label">Scene $(scenename)</span>
+            <ul class="shot" id="sb1_sc3_sh1" draggable="true">
+                <li class="shot_label">Shot $(shotname)</li>
+                <li class="panel" id="sb1_sc3_sh1_pa1" draggable="true" style="background: yellow;"></li>
+                <li class="panel" id="sb1_sc3_sh1_pa2" draggable="true" style="background: orange;"></li>
+                <li class="panel" id="sb1_sc3_sh1_pa3" draggable="true" style="background: violet;"></li>
+            </ul>
+            <ul class="shot" id="sb1_sc3_sh2" draggable="true">
+                <li class="shot_label">Shot $(shotname)</li>
+                <li class="panel" id="sb1_sc3_sh2_pa1" draggable="true" style="background: pink;"></li>
+                <li class="panel" id="sb1_sc3_sh2_pa2" draggable="true" style="background: cyan;"></li>
+            </ul>
+        </li>
+    </ul>
+    <script>
+        // Global Variables
+        var blankExists = false;
+        var dragWidth = 0;
+        var dragHeight = 0;
+        var index = 0;
+        var droppableElms;
+        var droppableElmss;
+        var sourceType;
+
+        //Listener functions
+        function dragStart(event) {
+            if (event.target.tagName == "li" || event.target.tagName == "span") {
+                event.dataTransfer.setData("ID", event.target.parentNode.id);
+                event.dataTransfer.setData("Class", event.target.parentNode.className);
+                dragWidth = event.target.parentNode.offsetWidth;
+                dragHeight = event.target.parentNode.offsetHeight;
+                sourceType = event.target.parentNode.className;
+            } else {
+                event.dataTransfer.setData("ID", event.target.id);
+                event.dataTransfer.setData("Class", event.target.className);
+                dragWidth = event.target.offsetWidth;
+                dragHeight = event.target.offsetHeight;
+                sourceType = event.target.className;
+            }
+            if (sourceType == "panel") {
+                droppableElms = document.getElementsByClassName("shot_label");
+                droppableElmss = document.getElementsByClassName("panel");
+            } else if (sourceType == "shot") {
+                droppableElms = document.getElementsByClassName("scene_label");
+                droppableElmss = document.getElementsByClassName("shot");
+            } else if (sourceType == "scene") {
+                droppableElms = document.getElementsByClassName("storyboard_label");
+                droppableElmss = document.getElementsByClassName("scene");
+            }
+            for (i = 0; i < droppableElms.length; i++) {
+                if (droppableElms.item(i) == event.target || droppableElms.item(i) == event.target.parentNode) {
+                    continue;
+                }
+                droppableElms[i].addEventListener("dragenter", dragEnter, false);
+            }
+            for (i = 0; i < droppableElmss.length; i++) {
+                if (droppableElmss.item(i) == event.target || droppableElmss.item(i) == event.target.parentNode) {
+                    continue;
+                }
+                droppableElmss[i].addEventListener("dragenter", dragEnter, false);
+            }
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function dragLeave(event) {
+            event.preventDefault();
+            if (event.target.id == "blankChild") {
+                var deleteMe = document.getElementById("blankChild");
+                deleteMe.removeEventListener("drop", onDropsy);
+                deleteMe.parentNode.removeChild(deleteMe);
+                blankExists = false;
+            }
+        }
+
+        function removeDrop(event) {
+            event.target.removeEventListener("drop", onDropsy);
+            event.target.removeEventListener("dragLeave", removeDrop);
+        }
+
+        function dragEnter(event) {
+            event.preventDefault();
+            if (sourceType == "panel") {
+                if (event.target.className == "shot_label") {
+                    event.target.addEventListener("drop", onDropsy, false);
+                    event.target.addEventListener("dragLeave", removeDrop, false);
+                } else if (event.target.className == "panel") {
+                    Create_Blank(event.target);
+                }
+            } else if (sourceType == "shot") {
+                if (event.target.className == "scene_label") {
+                    event.target.addEventListener("drop", onDropsy, false);
+                    event.target.addEventListener("dragLeave", removeDrop, false);
+                } else if (event.target.className == "shot_label") {
+                    Create_Blank(event.target.parentNode);
+                }
+            } else if (sourceType == "scene") {
+                if (event.target.className == "storyboard_label") {
+                    event.target.addEventListener("drop", onDropsy, false);
+                    event.target.addEventListener("dragLeave", removeDrop, false);
+                } else if (event.target.className == "scene_label") {
+                    Create_Blank(event.target.parentNode);
+                }
+            }
+        }
+
+        function onDropsy(event) {
+            event.preventDefault();
+            var data = event.dataTransfer.getData("ID");
+            if (sourceType == "panel" && event.target.className == "shot_label" || sourceType == "shot" && event.target.className == "scene_label" || sourceType == "scene" && event.target.className == "storyboard_label") {
+                event.target.parentNode.appendChild(document.getElementById(data));
+                event.target.removeEventListener("drop", onDropsy);
+                event.target.removeEventListener("dragLeave", removeDrop);
+                for (i = 0; i < droppableElms.length; i++) {
+                    droppableElms[i].removeEventListener("dragenter", dragEnter);
+                }
+                for (i = 0; i < droppableElmss.length; i++) {
+                    droppableElmss[i].removeEventListener("dragenter", dragEnter);
+                }
+                droppableElms = null;
+                droppableElmss = null;
+                return;
+            } else if (sourceType == "panel" && event.target.className == "blank_panel" || sourceType == "shot" && event.target.className == "blank_shot" || sourceType == "scene" && event.target.className == "blank_scene") {
+                event.target.parentNode.insertBefore(document.getElementById(data), event.target.parentNode.childNodes[index]);
+                var elm = document.getElementById("blankChild");
+                elm.parentNode.removeChild(elm);
+                blankExists = false;
+                for (i = 0; i < droppableElms.length; i++) {
+                    droppableElms[i].removeEventListener("dragenter", dragEnter);
+                }
+                for (i = 0; i < droppableElmss.length; i++) {
+                    droppableElmss[i].removeEventListener("dragenter", dragEnter);
+                }
+                droppableElms = null;
+                droppableElmss = null;
+                return;
+            }
+        }
+
+        function checkBlank(event) {
+            if (document.getElementById("blankChild") && event.target.id != "blankChild") {
+                var deleteMe = document.getElementById("blankChild");
+                deleteMe.removeEventListener("drop", onDropsy);
+                deleteMe.parentNode.removeChild(deleteMe);
+                blankExists = false;
+                for (i = 0; i < droppableElms.length; i++) {
+                    droppableElms[i].removeEventListener("dragenter", dragEnter);
+                }
+                for (i = 0; i < droppableElmss.length; i++) {
+                    droppableElmss[i].removeEventListener("dragenter", dragEnter);
+                }
+                droppableElms = null;
+                droppableElmss = null;
+            }
+        }
+
+        // Global Listeners
+        document.addEventListener("dragstart", dragStart, false);
+        document.addEventListener("dragover", dragOver, false);
+        document.addEventListener("dragleave", dragLeave, false);
+        document.addEventListener("drop", checkBlank, false);
+
+        // Create Droppable Elements
+        function Create_Blank(elm) {
+            var type = elm.tagName.toLowerCase();
+            var parent = elm.parentNode;
+            var children = parent.childNodes;
+            for (i = 0; i < children.length; i++) {
+                if (children.item(i) == elm && blankExists == false) {
+                    var selClassName = "blank_" + elm.className;
+                    var blankChild = document.createElement(type);
+                    blankChild.className = selClassName;
+                    blankChild.id = "blankChild";
+                    blankChild.setAttribute("style", "height: " + dragHeight + "px; width: " + dragWidth + "px;");
+                    parent.insertBefore(blankChild, parent.childNodes[i]);
+                    index = i;
+                    document.getElementById("blankChild").addEventListener("drop", onDropsy, false);
+                    blankExists = true;
+                    break;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
