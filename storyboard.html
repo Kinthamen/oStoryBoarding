@@ -8,6 +8,12 @@
             padding: 0px;
         }
 
+        img {
+            top: 0px;
+            left: 0px;
+            width: 300px;
+        }
+
         .storyboard {
             background: rgba(0,0,0,0.4);
             position: absolute;
@@ -49,6 +55,7 @@
             width: 300px;
             float: left;
             border-radius: 5px;
+            overflow:hidden;
         }
 
         .blank_panel {
@@ -127,17 +134,24 @@
         var index = 0;
         var droppableElms;
         var droppableElmss;
-        var sourceType;
+        var sourceType = "panel_desktop";
+        var acceptTypes = {
+            'image/png': true,
+            'image/jpeg': true,
+            'image/gif': true
+        }
 
         //Listener functions
         function dragStart(event) {
-            if (event.target.tagName == "li" || event.target.tagName == "span") {
+            if (event.target.tagName == "li" || event.target.tagName == "span" || event.target.tagName == "IMG") {
+                console.log("li or span");
                 event.dataTransfer.setData("ID", event.target.parentNode.id);
                 event.dataTransfer.setData("Class", event.target.parentNode.className);
                 dragWidth = event.target.parentNode.offsetWidth;
                 dragHeight = event.target.parentNode.offsetHeight;
                 sourceType = event.target.parentNode.className;
             } else {
+                console.log(event.target.tagName + " : " + event.target.parentNode.className);
                 event.dataTransfer.setData("ID", event.target.id);
                 event.dataTransfer.setData("Class", event.target.className);
                 dragWidth = event.target.offsetWidth;
@@ -168,6 +182,17 @@
             }
         }
 
+        function enablePanels(event) {
+            droppableElms = document.getElementsByClassName("shot_label");
+            droppableElmss = document.getElementsByClassName("panel");
+            for (i = 0; i < droppableElms.length; i++) {
+                droppableElms[i].addEventListener("dragenter", dragEnter, false);
+            }
+            for (i = 0; i < droppableElmss.length; i++) {
+                droppableElmss[i].addEventListener("dragenter", dragEnter, false);
+            }
+        }
+
         function dragOver(event) {
             event.preventDefault();
         }
@@ -189,7 +214,7 @@
 
         function dragEnter(event) {
             event.preventDefault();
-            if (sourceType == "panel") {
+            if (sourceType == "panel" || sourceType == "panel_desktop") {
                 if (event.target.className == "shot_label") {
                     event.target.addEventListener("drop", onDropsy, false);
                     event.target.addEventListener("dragLeave", removeDrop, false);
@@ -243,10 +268,45 @@
                 droppableElms = null;
                 droppableElmss = null;
                 return;
+            } else if (sourceType == "panel_desktop") {
+                var files = event.dataTransfer.files;
+                var file;
+                for (i = 0; i < files.length; i++) {
+                    file = files[0];
+                    break;
+                }
+                var panelIDs = document.getElementsByClassName("panel");
+                var panel = document.createElement("li");
+                panel.className = "panel";
+                panel.id = "panel_" + (panelIDs.length + 1);
+                panel.setAttribute("draggable", true);
+                if (acceptTypes[file.type] === true) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var image = new Image();
+                        image.src = e.target.result;
+                        panel.appendChild(image);
+                    }
+                    reader.readAsDataURL(file);
+                }
+                event.target.parentNode.insertBefore(panel, event.target.parentNode.childNodes[index]);
+                var elm = document.getElementById("blankChild");
+                elm.parentNode.removeChild(elm);
+                blankExists = false;
+                for (i = 0; i < droppableElms.length; i++) {
+                    droppableElms[i].removeEventListener("dragenter", dragEnter);
+                }
+                for (i = 0; i < droppableElmss.length; i++) {
+                    droppableElmss[i].removeEventListener("dragenter", dragEnter);
+                }
+                droppableElms = null;
+                droppableElmss = null;
+                return;
             }
         }
 
         function checkBlank(event) {
+            event.preventDefault();
             if (document.getElementById("blankChild") && event.target.id != "blankChild") {
                 var deleteMe = document.getElementById("blankChild");
                 deleteMe.removeEventListener("drop", onDropsy);
@@ -268,9 +328,14 @@
         document.addEventListener("dragover", dragOver, false);
         document.addEventListener("dragleave", dragLeave, false);
         document.addEventListener("drop", checkBlank, false);
+        window.addEventListener("dragenter", enablePanels, false);
 
         // Create Droppable Elements
         function Create_Blank(elm) {
+            if (sourceType == "panel_desktop") {
+                dragHeight = 200;
+                dragWidth = 300;
+            }
             var type = elm.tagName.toLowerCase();
             var parent = elm.parentNode;
             var children = parent.childNodes;
